@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Design;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.Xml;
 using System.Windows.Forms;
 using System.Xml.Linq;
@@ -25,6 +26,8 @@ namespace glWinForm1
 
         Shape aboba; // shape 1
         Shape amogus; // shape 2
+
+        List<Shape> shapes = new List<Shape>();
 
         Grid Grid; // axis grid
 
@@ -47,9 +50,14 @@ namespace glWinForm1
                 },
                 [255, 0, 255, 255] //colour
                 );
+            aboba.DrawMode = DrawMode.GL_LINE_STRIP;
 
             amogus = aboba + new Vector2(step * 5, 0);
             amogus.Colour = [0, 0, 255, 255];
+            amogus.DrawMode = DrawMode.GL_POINTS;
+
+            shapes.Add(aboba);
+            shapes.Add(amogus);
 
         }
 
@@ -62,8 +70,10 @@ namespace glWinForm1
 
         private void DrawShapes()
         {
-            aboba.Draw();
-            amogus.DrawDots();
+            foreach (Shape shape in shapes)
+            {
+                shape.Draw();
+            }
         }
 
         private void DrawGrid()

@@ -8,11 +8,38 @@ using static glWinForm1.OpenGL;
 
 namespace glWinForm1
 {
+    public enum DrawMode
+    {
+        GL_LINE_STRIP,
+        GL_LINE_STIPPLE,
+        GL_POINTS
+    }
+
     public class Shape : ICloneable
     {
-        public List<Vector2> Points { get; set; }
+        private List<Vector2> points;
+
+        public List<Vector2> Points
+        {
+            get { return this.points; }
+
+            set { this.points = value; }
+        }
+
+        public List<Vector2> PointsCycled
+        { 
+            get 
+            {
+                List<Vector2> result = new List<Vector2>(points);
+                result.Add(result[0]);
+                return result;
+            }
+        }
+
+
         public byte[] Colour { get; set; } = new byte[4];
         public int LineSize { get; set; } = 6;
+        public DrawMode DrawMode { get; set; } = DrawMode.GL_LINE_STRIP;
 
         public Shape() { }
 
@@ -29,51 +56,48 @@ namespace glWinForm1
 
         public Shape(Shape shape)
         {
-            Points =  new List<Vector2>(shape.Points);
+            Points = new List<Vector2>(shape.Points);
             Colour = shape.Colour;
             LineSize = shape.LineSize;
         }
 
-      // Винести параметр 
-        public void Draw()
+        public unsafe void Draw()
         {
             glColor4ubv(Colour);
             glLineWidth(LineSize);
-            glBegin(GL_LINE_STRIP);
-            foreach (var point in Points)
-            {
-                glVertex2d(point.X, point.Y);
-            }
-            glVertex2d(Points[0].X, Points[0].Y);
-            glEnd();
-        }
 
-        public void DrawDots()
-        {
-            glColor4ubv(Colour);
-            glPointSize(LineSize  *1.66f);
-            glBegin(GL_POINTS);
-            foreach (var point in Points)
-            {
-                glVertex2d(point.X, point.Y);
-            }
-            glEnd();
-        }
+            float[] vertices = Vector2_To_FloatArray_Points(PointsCycled);
 
-        public void DrawStipple()
-        {
-            glColor4ubv(Colour);
-            glLineWidth(LineSize);
-            glEnable(GL_LINE_STIPPLE);
-            glLineStipple(1, 0xFF00);
-            glBegin(GL_LINE_STRIP);
-            foreach (var point in Points)
+            fixed (float* ptr = vertices)
             {
-                glVertex2d(point.X, point.Y);
+                glEnableClientState(GL_VERTEX_ARRAY);
+                glVertexPointer(2, GL_FLOAT, 0, (nint)ptr);
+
+                switch (DrawMode)
+                {
+                    case DrawMode.GL_LINE_STRIP:
+                        { 
+                            glDrawArrays(GL_LINE_STRIP, 0, vertices.Length / 2); 
+                        }
+                        break;
+                    case DrawMode.GL_LINE_STIPPLE:
+                        {
+                            glEnable(GL_LINE_STIPPLE);
+                            glLineStipple(1, 0xFF00);
+                            glDrawArrays(GL_LINE_STRIP, 0, vertices.Length / 2);
+                            glDisable(GL_LINE_STIPPLE);
+                        }
+                        break;
+                    case DrawMode.GL_POINTS:
+                        {
+                            // draws first point twice
+                            glPointSize(LineSize * 1.66f);
+                            glDrawArrays(GL_POINTS, 0, vertices.Length / 2);
+                        }
+                        break;
+                }
+                glDisableClientState(GL_VERTEX_ARRAY);
             }
-            glVertex2d(Points[0].X, Points[0].Y);
-            glEnd();
-            glDisable(GL_LINE_STIPPLE);
         }
 
         public object Clone()
@@ -100,6 +124,18 @@ namespace glWinForm1
                 result.Points[i] -= vector;
             }
 
+            return result;
+        }
+
+        public static float[] Vector2_To_FloatArray_Points(List<Vector2> points)
+        {
+            float[] result = new float[points.Count * 2];
+            int i = 0;
+            foreach (var point in points)
+            {
+                result[i++] = point.X;
+                result[i++] = point.Y;
+            }
             return result;
         }
     }

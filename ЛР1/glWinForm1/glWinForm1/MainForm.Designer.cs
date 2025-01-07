@@ -58,6 +58,7 @@ namespace glWinForm1
             Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             Name = "MainForm";
             Text = "Lab1 OpenGL Heoka";
+            Load += MainForm_Load;
             ResumeLayout(false);
         }
 

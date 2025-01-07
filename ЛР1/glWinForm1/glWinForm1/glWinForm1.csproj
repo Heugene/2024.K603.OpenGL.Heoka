@@ -5,6 +5,7 @@
     <TargetFramework>net8.0-windows7.0</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>RenderControl.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,9 +44,7 @@
       <DependentUpon>OpenGL.cs</DependentUpon>
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="RenderControl\RenderControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Update="RenderControl\RenderControl.cs" />
   </ItemGroup>
 
 </Project>
